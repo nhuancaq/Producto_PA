@@ -74,9 +74,44 @@ Quicksort usa el esquema de partición de Hoare y elige como pivote la mediana e
 
 <pre><code>algoritmo, n, patron, repeticion, tiempo_ms, comparaciones, intercambios, profundidad_recursion, semilla, commit_hash</code></pre>
 
-<p>
-Las instrucciones de compilación, ejecución y regeneración de resultados, junto con el entorno de pruebas (hardware, sistema operativo, compilador, semilla y commit final), se agregarán a este archivo al terminar la implementación.
-</p>
+<h2>Compilación y ejecución</h2>
+
+<p>Requisitos: Windows, MSYS2 UCRT64 con g++ disponible en el PATH y una terminal abierta en la carpeta raíz del repositorio.</p>
+
+<p>En PowerShell, compila el programa así:</p>
+
+<pre><code>New-Item -ItemType Directory -Force build | Out-Null
+g++ -std=c++17 -O2 -Iinclude src/generadores.cpp src/insercion.cpp src/main.cpp src/quicksort.cpp src/utilidades.cpp -o build/benchmark.exe</code></pre>
+
+<p>Para una demostración breve, ejecuta tres repeticiones con tamaños de 1 000 y 10 000:</p>
+
+<pre><code>.\build\benchmark.exe --repeticiones 3 --tamanos 1000,10000 --semilla 12345 --salida results/demostracion.csv</code></pre>
+
+<p>Para generar las 600 filas de dos tamaños, cinco patrones, 30 repeticiones y dos algoritmos, ejecuta:</p>
+
+<pre><code>.\build\benchmark.exe --repeticiones 30 --tamanos 1000,10000 --semilla 12345 --salida results/resultados.csv</code></pre>
+
+<p>El CSV se guarda en la ruta indicada por <code>--salida</code>. El programa también acepta el tamaño 100 000; se recomienda probarlo por separado porque inserción puede tardar considerablemente más por su costo cuadrático. La opción <code>--muestra</code> genera entradas pequeñas de ejemplo, pero no sustituye la ejecución del benchmark.</p>
+
+<h2>Entorno y alcance</h2>
+
+<ul>
+  <li><b>Equipo:</b> AMD Ryzen 5 7530U, 6 núcleos y 12 hilos; 16 GB de RAM.</li>
+  <li><b>Sistema y compilador:</b> Windows 10, g++ 14.2.0 de MSYS2 UCRT64.</li>
+  <li><b>Compilación:</b> C++17 con optimización <code>-O2</code>.</li>
+  <li><b>Medición:</b> el cronómetro usa <code>std::chrono::steady_clock</code>; la generación de entradas y la escritura del CSV quedan fuera del intervalo cronometrado. El programa valida que la salida esté ordenada.</li>
+  <li><b>Alcance:</b> los tiempos describen las ejecuciones realizadas en este equipo y pueden variar con el hardware, el sistema operativo y el compilador.</li>
+</ul>
+
+<h2>Video de exposición</h2>
+
+<p>Video individual de demostración, publicado en YouTube con visibilidad <b>No listado</b>:</p>
+
+<p><a href="https://youtu.be/C6BZHaEGEwc">https://youtu.be/C6BZHaEGEwc</a></p>
+
+<h2>Diapositivas</h2>
+
+<p><a href="docs/presentacion_mejorada.pdf">Descargar la presentación del proyecto (PDF)</a></p>
 
 <h2>Referencias principales</h2>
 
