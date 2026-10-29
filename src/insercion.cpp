@@ -2,12 +2,14 @@
 
 #include "algoritmos.hpp"
 
+using namespace std;
+
 template <bool Contar>
-void insercion(std::vector<int>& a, Metricas& m) {
-    const std::size_t n = a.size();
-    for (std::size_t i = 1; i < n; ++i) {
+void insercion(vector<int>& a, Metricas& m) {
+    const size_t n = a.size();
+    for (size_t i = 1; i < n; ++i) {
         const int clave = a[i];
-        std::size_t j = i;
+        size_t j = i;
         while (j > 0) {
             if constexpr (Contar) {
                 ++m.comparaciones;
@@ -26,5 +28,5 @@ void insercion(std::vector<int>& a, Metricas& m) {
     }
 }
 
-template void insercion<true>(std::vector<int>&, Metricas&);
-template void insercion<false>(std::vector<int>&, Metricas&);
+template void insercion<true>(vector<int>&, Metricas&);
+template void insercion<false>(vector<int>&, Metricas&);

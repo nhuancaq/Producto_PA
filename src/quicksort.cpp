@@ -3,12 +3,14 @@
 
 #include "algoritmos.hpp"
 
+using namespace std;
+
 namespace {
 
-using Indice = std::ptrdiff_t;
+using Indice = ptrdiff_t;
 
 template <bool Contar>
-int mediana_de_tres(const std::vector<int>& a, Indice bajo, Indice medio,
+int mediana_de_tres(const vector<int>& a, Indice bajo, Indice medio,
                     Indice alto, Metricas& m) {
     const int x = a[bajo];
     const int y = a[medio];
@@ -39,7 +41,7 @@ int mediana_de_tres(const std::vector<int>& a, Indice bajo, Indice medio,
 }
 
 template <bool Contar>
-Indice particionar(std::vector<int>& a, Indice bajo, Indice alto, Metricas& m) {
+Indice particionar(vector<int>& a, Indice bajo, Indice alto, Metricas& m) {
     const Indice medio = bajo + (alto - bajo) / 2;
     const int pivote = mediana_de_tres<Contar>(a, bajo, medio, alto, m);
     Indice i = bajo - 1;
@@ -60,7 +62,7 @@ Indice particionar(std::vector<int>& a, Indice bajo, Indice alto, Metricas& m) {
         if (i >= j) {
             return j;
         }
-        std::swap(a[i], a[j]);
+        swap(a[i], a[j]);
         if constexpr (Contar) {
             ++m.intercambios;
         }
@@ -68,7 +70,7 @@ Indice particionar(std::vector<int>& a, Indice bajo, Indice alto, Metricas& m) {
 }
 
 template <bool Contar>
-void ordenar(std::vector<int>& a, Indice bajo, Indice alto, int profundidad,
+void ordenar(vector<int>& a, Indice bajo, Indice alto, int profundidad,
              Metricas& m) {
     if (bajo >= alto) {
         return;
@@ -86,12 +88,12 @@ void ordenar(std::vector<int>& a, Indice bajo, Indice alto, int profundidad,
 }
 
 template <bool Contar>
-void quicksort(std::vector<int>& a, Metricas& m) {
+void quicksort(vector<int>& a, Metricas& m) {
     if (a.size() < 2) {
         return;
     }
     ordenar<Contar>(a, 0, static_cast<Indice>(a.size()) - 1, 1, m);
 }
 
-template void quicksort<true>(std::vector<int>&, Metricas&);
-template void quicksort<false>(std::vector<int>&, Metricas&);
+template void quicksort<true>(vector<int>&, Metricas&);
+template void quicksort<false>(vector<int>&, Metricas&);

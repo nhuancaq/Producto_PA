@@ -14,12 +14,14 @@
 #include "metricas.hpp"
 #include "utilidades.hpp"
 
+using namespace std;
+
 namespace {
 
-using Rutina = void (*)(std::vector<int>&, Metricas&);
+using Rutina = void (*)(vector<int>&, Metricas&);
 
 struct Algoritmo {
-    std::string nombre;
+    string nombre;
     Rutina sin_contar;
     Rutina contando;
     bool recursivo;
@@ -28,19 +30,19 @@ struct Algoritmo {
 struct Configuracion {
     unsigned int semilla = 12345;
     int repeticiones = 30;
-    std::string salida = "results/resultados.csv";
-    std::string directorio_datos = "data";
-    std::vector<std::size_t> tamanos = {1000, 10000, 100000};
+    string salida = "results/resultados.csv";
+    string directorio_datos = "data";
+    vector<size_t> tamanos = {1000, 10000, 100000};
     bool muestra = false;
 };
 
-std::vector<Algoritmo> crear_algoritmos() {
+vector<Algoritmo> crear_algoritmos() {
     return {{"insercion", insercion<false>, insercion<true>, false},
             {"quicksort", quicksort<false>, quicksort<true>, true}};
 }
 
 void mostrar_ayuda() {
-    std::cout
+    cout
         << "Uso: benchmark [opciones]\n"
         << "  --semilla N         semilla base (por defecto 12345)\n"
         << "  --repeticiones N    repeticiones por condicion (por defecto 30)\n"
@@ -50,19 +52,19 @@ void mostrar_ayuda() {
         << "  --muestra           genera entradas y salidas de ejemplo con n = 40 y termina\n";
 }
 
-std::vector<std::size_t> leer_tamanos(const std::string& texto) {
-    std::vector<std::size_t> tamanos;
-    std::stringstream flujo(texto);
-    std::string parte;
-    while (std::getline(flujo, parte, ',')) {
-        tamanos.push_back(static_cast<std::size_t>(std::stoull(parte)));
+vector<size_t> leer_tamanos(const string& texto) {
+    vector<size_t> tamanos;
+    stringstream flujo(texto);
+    string parte;
+    while (getline(flujo, parte, ',')) {
+        tamanos.push_back(static_cast<size_t>(stoull(parte)));
     }
     return tamanos;
 }
 
 bool leer_argumentos(int argc, char** argv, Configuracion& cfg) {
     for (int i = 1; i < argc; ++i) {
-        const std::string arg = argv[i];
+        const string arg = argv[i];
         if (arg == "--muestra") {
             cfg.muestra = true;
             continue;
@@ -71,15 +73,15 @@ bool leer_argumentos(int argc, char** argv, Configuracion& cfg) {
             return false;
         }
         if (i + 1 >= argc) {
-            std::cerr << "Falta el valor de " << arg << "\n";
+            cerr << "Falta el valor de " << arg << "\n";
             return false;
         }
-        const std::string valor = argv[++i];
+        const string valor = argv[++i];
         try {
             if (arg == "--semilla") {
-                cfg.semilla = static_cast<unsigned int>(std::stoul(valor));
+                cfg.semilla = static_cast<unsigned int>(stoul(valor));
             } else if (arg == "--repeticiones") {
-                cfg.repeticiones = std::stoi(valor);
+                cfg.repeticiones = stoi(valor);
             } else if (arg == "--salida") {
                 cfg.salida = valor;
             } else if (arg == "--datos") {
@@ -87,21 +89,21 @@ bool leer_argumentos(int argc, char** argv, Configuracion& cfg) {
             } else if (arg == "--tamanos") {
                 cfg.tamanos = leer_tamanos(valor);
             } else {
-                std::cerr << "Opcion desconocida: " << arg << "\n";
+                cerr << "Opcion desconocida: " << arg << "\n";
                 return false;
             }
-        } catch (const std::exception&) {
-            std::cerr << "Valor invalido para " << arg << "\n";
+        } catch (const exception&) {
+            cerr << "Valor invalido para " << arg << "\n";
             return false;
         }
     }
     return cfg.repeticiones > 0 && !cfg.tamanos.empty();
 }
 
-void escribir_vector(const std::filesystem::path& ruta,
-                     const std::vector<int>& v) {
-    std::ofstream archivo(ruta);
-    for (std::size_t i = 0; i < v.size(); ++i) {
+void escribir_vector(const filesystem::path& ruta,
+                     const vector<int>& v) {
+    ofstream archivo(ruta);
+    for (size_t i = 0; i < v.size(); ++i) {
         if (i > 0) {
             archivo << ' ';
         }
@@ -111,64 +113,64 @@ void escribir_vector(const std::filesystem::path& ruta,
 }
 
 int generar_muestra(const Configuracion& cfg) {
-    const std::filesystem::path carpeta(cfg.directorio_datos);
-    std::filesystem::create_directories(carpeta);
-    const std::vector<Algoritmo> algoritmos = crear_algoritmos();
+    const filesystem::path carpeta(cfg.directorio_datos);
+    filesystem::create_directories(carpeta);
+    const vector<Algoritmo> algoritmos = crear_algoritmos();
     for (Patron patron : todos_los_patrones()) {
-        const std::string nombre = nombre_patron(patron);
-        const std::vector<int> entrada = generar(patron, 40, cfg.semilla);
+        const string nombre = nombre_patron(patron);
+        const vector<int> entrada = generar(patron, 40, cfg.semilla);
         escribir_vector(carpeta / ("entrada_" + nombre + ".txt"), entrada);
         for (const Algoritmo& alg : algoritmos) {
-            std::vector<int> datos = entrada;
+            vector<int> datos = entrada;
             Metricas descarte;
             alg.sin_contar(datos, descarte);
             escribir_vector(carpeta / ("salida_" + alg.nombre + "_" + nombre + ".txt"),
                             datos);
         }
     }
-    std::cout << "Muestras escritas en " << carpeta.string() << "\n";
+    cout << "Muestras escritas en " << carpeta.string() << "\n";
     return 0;
 }
 
 int ejecutar_benchmark(const Configuracion& cfg) {
-    const std::filesystem::path ruta(cfg.salida);
+    const filesystem::path ruta(cfg.salida);
     if (ruta.has_parent_path()) {
-        std::filesystem::create_directories(ruta.parent_path());
+        filesystem::create_directories(ruta.parent_path());
     }
-    std::ofstream csv(ruta);
+    ofstream csv(ruta);
     if (!csv) {
-        std::cerr << "No se pudo abrir " << cfg.salida << "\n";
+        cerr << "No se pudo abrir " << cfg.salida << "\n";
         return 1;
     }
     csv << "algoritmo,n,patron,repeticion,tiempo_ms,comparaciones,intercambios,"
            "profundidad_recursion,semilla,commit_hash\n";
 
-    const std::string commit = obtener_commit_hash();
-    const std::vector<Algoritmo> algoritmos = crear_algoritmos();
-    const std::vector<Patron>& patrones = todos_los_patrones();
+    const string commit = obtener_commit_hash();
+    const vector<Algoritmo> algoritmos = crear_algoritmos();
+    const vector<Patron>& patrones = todos_los_patrones();
 
-    for (std::size_t n : cfg.tamanos) {
-        for (std::size_t ip = 0; ip < patrones.size(); ++ip) {
+    for (size_t n : cfg.tamanos) {
+        for (size_t ip = 0; ip < patrones.size(); ++ip) {
             const Patron patron = patrones[ip];
-            const std::string nombre = nombre_patron(patron);
-            std::cout << "n=" << n << " patron=" << nombre << std::flush;
+            const string nombre = nombre_patron(patron);
+            cout << "n=" << n << " patron=" << nombre << flush;
 
             for (int rep = 1; rep <= cfg.repeticiones; ++rep) {
                 const unsigned int semilla_entrada =
                     semilla_para(cfg.semilla, n, ip, rep);
-                const std::vector<int> base = generar(patron, n, semilla_entrada);
+                const vector<int> base = generar(patron, n, semilla_entrada);
 
                 for (const Algoritmo& alg : algoritmos) {
-                    std::vector<int> datos = base;
+                    vector<int> datos = base;
                     Metricas descarte;
-                    const auto inicio = std::chrono::steady_clock::now();
+                    const auto inicio = chrono::steady_clock::now();
                     alg.sin_contar(datos, descarte);
-                    const auto fin = std::chrono::steady_clock::now();
+                    const auto fin = chrono::steady_clock::now();
                     const double tiempo_ms =
-                        std::chrono::duration<double, std::milli>(fin - inicio)
+                        chrono::duration<double, milli>(fin - inicio)
                             .count();
                     if (!esta_ordenado(datos)) {
-                        std::cerr << "\nResultado no ordenado en " << alg.nombre
+                        cerr << "\nResultado no ordenado en " << alg.nombre
                                   << "\n";
                         return 1;
                     }
@@ -177,13 +179,13 @@ int ejecutar_benchmark(const Configuracion& cfg) {
                     Metricas m;
                     alg.contando(datos, m);
                     if (!esta_ordenado(datos)) {
-                        std::cerr << "\nResultado no ordenado en " << alg.nombre
+                        cerr << "\nResultado no ordenado en " << alg.nombre
                                   << " (corrida con contadores)\n";
                         return 1;
                     }
 
                     csv << alg.nombre << ',' << n << ',' << nombre << ',' << rep
-                        << ',' << std::fixed << std::setprecision(6) << tiempo_ms
+                        << ',' << fixed << setprecision(6) << tiempo_ms
                         << ',' << m.comparaciones << ',' << m.intercambios << ',';
                     if (alg.recursivo) {
                         csv << m.profundidad_maxima;
@@ -194,10 +196,10 @@ int ejecutar_benchmark(const Configuracion& cfg) {
                 }
             }
             csv.flush();
-            std::cout << " listo\n";
+            cout << " listo\n";
         }
     }
-    std::cout << "Resultados en " << cfg.salida << "\n";
+    cout << "Resultados en " << cfg.salida << "\n";
     return 0;
 }
 
